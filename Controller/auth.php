@@ -8,16 +8,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($action === 'register') {
         $name = $_POST['name'];
         $email = $_POST['email'];
-        // Always hash passwords for security
         $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
         $stmt = $conn->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
         $stmt->bind_param("sss", $name, $email, $password);
         
-        if ($stmt->execute()) {
-            echo "Registration successful! <a href='../View/html/login.html'>Login here</a>";
-        } else {
-            echo "Error: " . $stmt->error;
+        try {
+            if ($stmt->execute()) {
+                echo "Registration successful! <a href='../View/html/login.html'>Login here</a>";
+            }
+        } catch (mysqli_sql_exception $e) {
+            // 1062 is the MySQL error code for a duplicate entry
+            if ($e->getCode() == 1062) {
+                echo "Error: This email is already registered. <a href='../View/html/login.html'>Login here</a>";
+            } else {
+                echo "Database Error: " . $e->getMessage();
+            }
         }
         $stmt->close();
         
@@ -32,7 +38,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         if ($row = $result->fetch_assoc()) {
             if (password_verify($password, $row['password'])) {
-		// Store user data in session and redirect to dashboard
                 $_SESSION['user_id'] = $row['id'];
                 $_SESSION['user_name'] = $row['name'];
                 header("Location: ../View/html/dashboard.php");
@@ -48,4 +53,3 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 $conn->close();
 ?>
-
