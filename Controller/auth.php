@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once '../Model/db.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -31,8 +32,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         if ($row = $result->fetch_assoc()) {
             if (password_verify($password, $row['password'])) {
-                echo "Welcome to LCU Cinemas, " . htmlspecialchars($row['name']) . "!";
-                // Session logic will go here later
+		// Store user data in session and redirect to dashboard
+                $_SESSION['user_id'] = $row['id'];
+                $_SESSION['user_name'] = $row['name'];
+                header("Location: ../View/html/dashboard.php");
+                exit();
             } else {
                 echo "Invalid password.";
             }
