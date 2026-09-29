@@ -23,18 +23,21 @@ $movies = $conn->query("SELECT * FROM movies");
     <div class="container mt-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Welcome, <?php echo htmlspecialchars($_SESSION['user_name']); ?>!</h2>
-            <a href="../../Controller/logout.php" class="btn btn-outline-danger">Logout</a>
+            <div>
+                <a href="my_bookings.php" class="btn btn-outline-light me-2">My Bookings</a>
+                <a href="../../Controller/logout.php" class="btn btn-outline-danger">Logout</a>
+            </div>
         </div>
-
+        
         <div class="row">
             <?php while($row = $movies->fetch_assoc()): ?>
             <div class="col-md-4 mb-3">
                 <div class="card bg-secondary text-white shadow">
                     <div class="card-body">
-                        <h5 class="card-title text-warning fw-bold"><?php echo $row['title']; ?></h5>
-                        <p class="card-text">Duration: <?php echo $row['duration']; ?> mins</p>
-                        <p class="card-text">Language: <?php echo $row['language']; ?></p>
-                        <button class="btn btn-warning w-100 fw-bold">Book Tickets</button>
+                        <h5 class="card-title text-warning fw-bold"><?php echo htmlspecialchars($row['title']); ?></h5>
+                        <p class="card-text">Duration: <?php echo htmlspecialchars($row['duration']); ?> mins</p>
+                        <p class="card-text">Language: <?php echo htmlspecialchars($row['language']); ?></p>
+                        <a href="booking.php?movie_id=<?php echo $row['id']; ?>" class="btn btn-warning w-100 fw-bold">Book Tickets</a>
                     </div>
                 </div>
             </div>
