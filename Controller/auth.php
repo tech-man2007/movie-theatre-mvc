@@ -15,12 +15,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         try {
             if ($stmt->execute()) {
-                echo "Registration successful! <a href='../View/html/login.html'>Login here</a>";
+                header("Location: ../View/html/login.php?msg=registered");
+                exit();
             }
         } catch (mysqli_sql_exception $e) {
-            // 1062 is the MySQL error code for a duplicate entry
             if ($e->getCode() == 1062) {
-                echo "Error: This email is already registered. <a href='../View/html/login.html'>Login here</a>";
+                header("Location: ../View/html/register.php?error=email_exists");
+                exit();
             } else {
                 echo "Database Error: " . $e->getMessage();
             }
@@ -43,10 +44,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 header("Location: ../View/html/dashboard.php");
                 exit();
             } else {
-                echo "Invalid password.";
+                header("Location: ../View/html/login.php?error=invalid_password");
+                exit();
             }
         } else {
-            echo "User not found.";
+            header("Location: ../View/html/login.php?error=user_not_found");
+            exit();
         }
         $stmt->close();
     }
