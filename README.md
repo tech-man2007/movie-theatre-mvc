@@ -35,7 +35,6 @@ LCU Cinemas is a web-based application that allows users to browse movies, selec
 - [Security Considerations](#-security-considerations)
 - [Future Enhancements](#-future-enhancements)
 - [Author](#-author)
-- [License](#-license)
 
 ---
 
