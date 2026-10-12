@@ -7,28 +7,56 @@ if (!isset($_SESSION['admin_id'])) {
     exit();
 }
 
-// Handle Add Movie with File Upload
+// Handle Add Movie
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_movie'])) {
     $title = $_POST['title'];
     $duration = $_POST['duration'];
     $language = $_POST['language'];
-    
-    // Default fallback banner
-    $banner = 'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=600&q=80';
+    $banner = 'uploads/default_banner.jpg'; // fallback
 
-    // Handle Image File Upload
     if (isset($_FILES['banner_file']) && $_FILES['banner_file']['error'] === 0) {
         $ext = pathinfo($_FILES['banner_file']['name'], PATHINFO_EXTENSION);
         $filename = 'movie_' . time() . '.' . $ext;
         $target = '../../uploads/' . $filename;
         if (move_uploaded_file($_FILES['banner_file']['tmp_name'], $target)) {
-            $banner = $target;
+            $banner = 'uploads/' . $filename; // store clean relative path
         }
     }
     
     $stmt = $conn->prepare("INSERT INTO movies (title, duration, language, banner) VALUES (?, ?, ?, ?)");
     $stmt->bind_param("siss", $title, $duration, $language, $banner);
     $stmt->execute();
+    header("Location: dashboard.php");
+    exit();
+}
+
+// Handle Edit Movie
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_movie'])) {
+    $id = $_POST['movie_id'];
+    $title = $_POST['title'];
+    $duration = $_POST['duration'];
+    $language = $_POST['language'];
+
+    if (isset($_FILES['banner_file']) && $_FILES['banner_file']['error'] === 0) {
+        $ext = pathinfo($_FILES['banner_file']['name'], PATHINFO_EXTENSION);
+        $filename = 'movie_' . time() . '.' . $ext;
+        $target = '../../uploads/' . $filename;
+        if (move_uploaded_file($_FILES['banner_file']['tmp_name'], $target)) {
+            $banner = 'uploads/' . $filename;
+            $stmt = $conn->prepare("UPDATE movies SET title = ?, duration = ?, language = ?, banner = ? WHERE id = ?");
+            $stmt->bind_param("sissi", $title, $duration, $language, $banner, $id);
+            $stmt->execute();
+        }
+    } else {
+        $stmt = $conn->prepare("UPDATE movies SET title = ?, duration = ?, language = ? WHERE id = ?");
+        $stmt->bind_param("ssii", $title, $duration, $language, $id);
+        // Note: type definition corrected below for s s i i
+    }
+    // Correct bind for title(s), duration(i), language(s), id(i) -> "sisi"
+    $stmt = $conn->prepare("UPDATE movies SET title = ?, duration = ?, language = ? WHERE id = ?");
+    $stmt->bind_param("sisi", $title, $duration, $language, $id);
+    $stmt->execute();
+
     header("Location: dashboard.php");
     exit();
 }
@@ -54,6 +82,13 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
 $users = $conn->query("SELECT * FROM users");
 $movies = $conn->query("SELECT * FROM movies");
 $all_bookings = $conn->query("SELECT b.*, u.name as user_name, m.title as movie_title FROM bookings b JOIN users u ON b.user_id = u.id JOIN movies m ON b.movie_id = m.id ORDER BY b.booking_date DESC");
+
+$edit_movie_data = null;
+if (isset($_GET['action']) && $_GET['action'] === 'edit_movie_form' && isset($_GET['id'])) {
+    $edit_id = $_GET['id'];
+    $res = $conn->query("SELECT * FROM movies WHERE id = $edit_id");
+    $edit_movie_data = $res->fetch_assoc();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -68,7 +103,36 @@ $all_bookings = $conn->query("SELECT b.*, u.name as user_name, m.title as movie_
         <a href="../../../Controller/logout.php" class="btn btn-outline-danger">Logout</a>
     </div>
 
-    <!-- Add Movie Section with File Upload & Fixed Button Layout -->
+    <?php if ($edit_movie_data): ?>
+    <!-- Edit Movie Section -->
+    <div class="card bg-secondary text-white p-4 mb-4 border border-warning">
+        <h4 class="text-warning mb-3">Edit Movie: <?php echo htmlspecialchars($edit_movie_data['title']); ?></h4>
+        <form method="POST" enctype="multipart/form-data" class="row g-3">
+            <input type="hidden" name="edit_movie" value="1">
+            <input type="hidden" name="movie_id" value="<?php echo $edit_movie_data['id']; ?>">
+            <div class="col-md-4">
+                <label class="form-label text-light">Movie Title</label>
+                <input type="text" name="title" class="form-control" value="<?php echo htmlspecialchars($edit_movie_data['title']); ?>" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label text-light">Duration (mins)</label>
+                <input type="number" name="duration" class="form-control" value="<?php echo htmlspecialchars($edit_movie_data['duration']); ?>" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label text-light">Language</label>
+                <input type="text" name="language" class="form-control" value="<?php echo htmlspecialchars($edit_movie_data['language']); ?>" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label text-light">New Banner Image File (Optional)</label>
+                <input type="file" name="banner_file" class="form-control" accept="image/*">
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+                <button type="submit" class="btn btn-warning w-100 fw-bold py-2">Update Movie</button>
+            </div>
+        </form>
+    </div>
+    <?php else: ?>
+    <!-- Add Movie Section -->
     <div class="card bg-secondary text-white p-4 mb-4">
         <h4 class="text-warning mb-3">Add New Movie & Upload Banner</h4>
         <form method="POST" enctype="multipart/form-data" class="row g-3">
@@ -94,6 +158,7 @@ $all_bookings = $conn->query("SELECT b.*, u.name as user_name, m.title as movie_
             </div>
         </form>
     </div>
+    <?php endif; ?>
 
     <!-- Manage Movies Section -->
     <h4 class="text-warning mb-3">Manage Movies</h4>
@@ -105,18 +170,24 @@ $all_bookings = $conn->query("SELECT b.*, u.name as user_name, m.title as movie_
                     <th>Title</th>
                     <th>Language</th>
                     <th>Duration</th>
-                    <th>Action</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <?php while ($m = $movies->fetch_assoc()): ?>
+                <?php while ($m = $movies->fetch_assoc()): 
+                    $poster = $m['banner'];
+                    if (strpos($poster, 'http') !== 0) {
+                        $poster = '../../' . ltrim($poster, './');
+                    }
+                ?>
                 <tr>
-                    <td><img src="<?php echo htmlspecialchars($m['banner']); ?>" alt="Poster" style="width: 50px; height: 70px; object-fit: cover; border-radius: 4px;"></td>
+                    <td><img src="<?php echo htmlspecialchars($poster); ?>" alt="Poster" style="width: 50px; height: 70px; object-fit: cover; border-radius: 4px;"></td>
                     <td class="fw-bold"><?php echo htmlspecialchars($m['title']); ?></td>
                     <td><?php echo htmlspecialchars($m['language']); ?></td>
                     <td><?php echo htmlspecialchars($m['duration']); ?> mins</td>
                     <td>
-                        <a href="dashboard.php?action=delete_movie&id=<?php echo $m['id']; ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete movie and its bookings?')">Delete Movie</a>
+                        <a href="dashboard.php?action=edit_movie_form&id=<?php echo $m['id']; ?>" class="btn btn-sm btn-outline-warning me-2">Edit</a>
+                        <a href="dashboard.php?action=delete_movie&id=<?php echo $m['id']; ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete movie and its bookings?')">Delete</a>
                     </td>
                 </tr>
                 <?php endwhile; ?>
@@ -182,7 +253,7 @@ $all_bookings = $conn->query("SELECT b.*, u.name as user_name, m.title as movie_
                         <a href="dashboard.php?action=delete_user&id=<?php echo $u['id']; ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete user and their bookings?')">Delete User</a>
                     </td>
                 </tr>
-                <?php endwhile; ?>
+                <?php endforeach; ?>
             </tbody>
         </table>
     </div>

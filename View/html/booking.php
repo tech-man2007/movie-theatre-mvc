@@ -154,11 +154,11 @@ $row_tiers = [     'A' => ['price' => 150, 'theme' => 'info', 'name' => 'Standar
             btn.classList.add(`btn-${getRowTheme(row)}`);
         }
 
-        // Instantly force focus loss to clear highlights
+        // Bulletproof mobile touch focus reset
         btn.blur();
-        btn.blur();
+        window.getSelection().removeAllRanges();
 
-        // Calculate dynamic total price based on individual seat row prices
+        // Calculate dynamic total price
         let totalPrice = 0;
         selectedSeats.forEach(s => {
             const r = s.charAt(0);
@@ -170,11 +170,6 @@ $row_tiers = [     'A' => ['price' => 150, 'theme' => 'info', 'name' => 'Standar
         document.getElementById('selected-seats-display').innerText = selectedSeats.length > 0 ? selectedSeats.join(', ') : 'None';
         document.getElementById('total-price-display').innerText = totalPrice;
         document.getElementById('submit-btn').disabled = selectedSeats.length === 0;
-    }
-
-    function getRowTheme(row) {
-        const themes = { 'A': 'info', 'B': 'warning', 'C': 'success', 'D': 'danger' };
-        return themes[row] || 'warning';
     }
     </script>
 </body>
