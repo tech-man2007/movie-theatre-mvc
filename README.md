@@ -1,4 +1,4 @@
-# 🎬 LCU Cinemas — Movie Theatre Management System
+# 🎬 LCU Cinemas - Movie Theatre Management System
 
 **A PHP and MySQL-based Movie Theatre Management System built using the MVC architecture and hosted on InfinityFree.**
 
@@ -27,7 +27,7 @@ LCU Cinemas is a web-based application that allows users to browse movies, selec
   - [Admin Authentication](#5-admin-authentication)
   - [Admin Dashboard](#6-admin-dashboard)
 - [Technologies Used](#-technologies-used)
-- [MVC Architecture](#-mvc-architecture)
+- [MVC Architecture](#%EF%B8%8F-mvc-architecture)
 - [Project Structure](#-project-structure)
 - [Database Setup](#-database-setup)
 - [Installation and Setup](#-installation-and-setup)
