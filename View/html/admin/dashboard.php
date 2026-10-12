@@ -7,12 +7,24 @@ if (!isset($_SESSION['admin_id'])) {
     exit();
 }
 
-// Handle Add Movie
+// Handle Add Movie with File Upload
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_movie'])) {
     $title = $_POST['title'];
     $duration = $_POST['duration'];
     $language = $_POST['language'];
-    $banner = $_POST['banner'] ?: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=600&q=80';
+    
+    // Default fallback banner
+    $banner = 'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=600&q=80';
+
+    // Handle Image File Upload
+    if (isset($_FILES['banner_file']) && $_FILES['banner_file']['error'] === 0) {
+        $ext = pathinfo($_FILES['banner_file']['name'], PATHINFO_EXTENSION);
+        $filename = 'movie_' . time() . '.' . $ext;
+        $target = '../../uploads/' . $filename;
+        if (move_uploaded_file($_FILES['banner_file']['tmp_name'], $target)) {
+            $banner = $target;
+        }
+    }
     
     $stmt = $conn->prepare("INSERT INTO movies (title, duration, language, banner) VALUES (?, ?, ?, ?)");
     $stmt->bind_param("siss", $title, $duration, $language, $banner);
@@ -21,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_movie'])) {
     exit();
 }
 
-// Handle Actions (Promote, Demote, Delete User, Delete Movie)
+// Handle Actions
 if (isset($_GET['action']) && isset($_GET['id'])) {
     $id = $_GET['id'];
     if ($_GET['action'] === 'promote') {
@@ -29,7 +41,6 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
     } elseif ($_GET['action'] === 'demote') {
         $conn->query("UPDATE users SET role = 'user' WHERE id = $id");
     } elseif ($_GET['action'] === 'delete_user') {
-        // Clear child foreign key bookings first, then delete user
         $conn->query("DELETE FROM bookings WHERE user_id = $id");
         $conn->query("DELETE FROM users WHERE id = $id");
     } elseif ($_GET['action'] === 'delete_movie') {
@@ -57,25 +68,29 @@ $all_bookings = $conn->query("SELECT b.*, u.name as user_name, m.title as movie_
         <a href="../../../Controller/logout.php" class="btn btn-outline-danger">Logout</a>
     </div>
 
-    <!-- Add Movie Section -->
+    <!-- Add Movie Section with File Upload & Fixed Button Layout -->
     <div class="card bg-secondary text-white p-4 mb-4">
-        <h4 class="text-warning mb-3">Add New Movie & Banner</h4>
-        <form method="POST" class="row g-3">
+        <h4 class="text-warning mb-3">Add New Movie & Upload Banner</h4>
+        <form method="POST" enctype="multipart/form-data" class="row g-3">
             <input type="hidden" name="add_movie" value="1">
-            <div class="col-md-3">
-                <input type="text" name="title" class="form-control" placeholder="Movie Title" required>
-            </div>
-            <div class="col-md-2">
-                <input type="number" name="duration" class="form-control" placeholder="Duration (mins)" required>
-            </div>
-            <div class="col-md-2">
-                <input type="text" name="language" class="form-control" placeholder="Language" required>
+            <div class="col-md-4">
+                <label class="form-label text-light">Movie Title</label>
+                <input type="text" name="title" class="form-control" placeholder="e.g. Leo" required>
             </div>
             <div class="col-md-3">
-                <input type="url" name="banner" class="form-control" placeholder="Banner Image URL">
+                <label class="form-label text-light">Duration (mins)</label>
+                <input type="number" name="duration" class="form-control" placeholder="164" required>
             </div>
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-warning w-100 fw-bold">Add Movie</button>
+            <div class="col-md-3">
+                <label class="form-label text-light">Language</label>
+                <input type="text" name="language" class="form-control" placeholder="Tamil" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label text-light">Banner Image File</label>
+                <input type="file" name="banner_file" class="form-control" accept="image/*" required>
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+                <button type="submit" class="btn btn-warning w-100 fw-bold py-2">Add Movie & Upload</button>
             </div>
         </form>
     </div>
