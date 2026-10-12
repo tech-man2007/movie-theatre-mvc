@@ -29,7 +29,10 @@
             </div>
             <div class="mb-3">
                 <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" required>
+                <div class="input-group">
+                    <input type="password" name="password" id="register-password" class="form-control" required>
+                    <button class="btn btn-outline-light" type="button" onclick="togglePassword('register-password', this)">👁️</button>
+                </div>
             </div>
             <button type="submit" class="btn btn-warning w-100 fw-bold">Register</button>
         </form>
@@ -37,5 +40,18 @@
             <small>Already have an account? <a href="login.php" class="text-warning">Login</a></small>
         </div>
     </div>
+
+    <script>
+        function togglePassword(fieldId, btn) {
+            const field = document.getElementById(fieldId);
+            if (field.type === 'password') {
+                field.type = 'text';
+                btn.innerText = '🙈';
+            } else {
+                field.type = 'password';
+                btn.innerText = '👁️';
+            }
+        }
+    </script>
 </body>
 </html>
