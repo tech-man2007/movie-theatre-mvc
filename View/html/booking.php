@@ -95,28 +95,31 @@ $seats_per_row = 6;
     </div>
 
     <script>
-        let selectedSeats = [];
-        const ticketPrice = 200;
+    let selectedSeats = [];
+    const ticketPrice = 200;
 
-        function toggleSeat(btn) {
-            const seat = btn.getAttribute('data-seat');
-            
-            if (selectedSeats.includes(seat)) {
-                selectedSeats = selectedSeats.filter(s => s !== seat);
-                btn.classList.remove('btn-warning');
-                btn.classList.add('btn-outline-warning');
-            } else {
-                selectedSeats.push(seat);
-                btn.classList.remove('btn-outline-warning');
-                btn.classList.add('btn-warning');
-            }
-
-            // Update UI & Hidden Form Input
-            document.getElementById('seats-input').value = selectedSeats.join(',');
-            document.getElementById('selected-seats-display').innerText = selectedSeats.length > 0 ? selectedSeats.join(', ') : 'None';
-            document.getElementById('total-price-display').innerText = selectedSeats.length * ticketPrice;
-            document.getElementById('submit-btn').disabled = selectedSeats.length === 0;
+    function toggleSeat(btn) {
+        const seat = btn.getAttribute('data-seat');
+        
+        if (selectedSeats.includes(seat)) {
+            selectedSeats = selectedSeats.filter(s => s !== seat);
+            btn.classList.remove('btn-warning');
+            btn.classList.add('btn-outline-warning');
+        } else {
+            selectedSeats.push(seat);
+            btn.classList.remove('btn-outline-warning');
+            btn.classList.add('btn-warning');
         }
-    </script>
+
+        // Fixes the sticky UI highlight issue instantly
+        btn.blur();
+
+        // Update UI & Hidden Form Input
+        document.getElementById('seats-input').value = selectedSeats.join(',');
+        document.getElementById('selected-seats-display').innerText = selectedSeats.length > 0 ? selectedSeats.join(', ') : 'None';
+        document.getElementById('total-price-display').innerText = selectedSeats.length * ticketPrice;
+        document.getElementById('submit-btn').disabled = selectedSeats.length === 0;
+    }
+</script>
 </body>
 </html>
