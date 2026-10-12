@@ -41,6 +41,10 @@ $seats_per_row = 6;
     <link href="../css/style.css" rel="stylesheet">
     <style>
         .seat-btn { width: 45px; height: 45px; margin: 4px; font-weight: bold; }
+        .seat-btn:focus, .seat-btn:active {
+            box-shadow: none !important;
+            outline: none !important;
+        }
         .screen {
             background: #e0e0e0;
             height: 8px;
@@ -66,7 +70,7 @@ $seats_per_row = 6;
             <?php foreach ($rows as $r): ?>
                 <div class="d-flex justify-content-center align-items-center mb-1">
                     <span class="me-3 fw-bold text-warning" style="width: 20px;"><?php echo $r; ?></span>
-                    <?php for ($i = 1; $i <= $seats_per_row; $i++): 
+                    <?php for ($i = 1; $i <= $seats_per_row; $i++):
                         $seat_id = $r . $i;
                         $is_occupied = in_array($seat_id, $occupied_seats);
                     ?>
@@ -84,12 +88,30 @@ $seats_per_row = 6;
         <form action="../../Controller/booking.php" method="POST" class="card bg-secondary text-white p-4 mt-4">
             <input type="hidden" name="movie_id" value="<?php echo $movie['id']; ?>">
             <input type="hidden" name="seats" id="seats-input" required>
-            
+
+            <!-- Show Date & Time Selection -->
+            <div class="row mb-3">
+                <div class="col-md-6 mb-2 mb-md-0">
+                    <label class="form-label">Show Date</label>
+                    <input type="date" name="show_date" class="form-control bg-dark text-light border-secondary" required min="<?php echo date('Y-m-d'); ?>">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Show Time</label>
+                    <select name="show_time" class="form-control bg-dark text-light border-secondary" required>
+                        <option value="">Select Time</option>
+                        <option value="10:00 AM">10:00 AM</option>
+                        <option value="01:30 PM">01:30 PM</option>
+                        <option value="05:00 PM">05:00 PM</option>
+                        <option value="09:00 PM">09:00 PM</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <span>Selected Seats: <strong id="selected-seats-display" class="text-warning">None</strong></span>
                 <span>Total: <strong class="text-warning fs-5">₹<span id="total-price-display">0</span></strong></span>
             </div>
-            
+
             <button type="submit" id="submit-btn" class="btn btn-warning fw-bold w-100" disabled>Confirm & Pay</button>
         </form>
     </div>
@@ -100,7 +122,7 @@ $seats_per_row = 6;
 
     function toggleSeat(btn) {
         const seat = btn.getAttribute('data-seat');
-        
+
         if (selectedSeats.includes(seat)) {
             selectedSeats = selectedSeats.filter(s => s !== seat);
             btn.classList.remove('btn-warning');
@@ -120,6 +142,6 @@ $seats_per_row = 6;
         document.getElementById('total-price-display').innerText = selectedSeats.length * ticketPrice;
         document.getElementById('submit-btn').disabled = selectedSeats.length === 0;
     }
-</script>
+    </script>
 </body>
 </html>
