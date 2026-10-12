@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_movie'])) {
         $filename = 'movie_' . time() . '.' . $ext;
         $target = '../../uploads/' . $filename;
         if (move_uploaded_file($_FILES['banner_file']['tmp_name'], $target)) {
-            $banner = 'uploads/' . $filename; // store clean relative path
+            $banner = 'uploads/' . $filename;
         }
     }
 
@@ -57,8 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_movie'])) {
     exit();
 }
 
-// Handle Actions
-if (isset($_GET['action']) && isset($_GET['id'])) {
+// Handle Actions (Excluding edit_movie_form so it doesn't redirect prematurely)
+if (isset($_GET['action']) && isset($_GET['id']) && $_GET['action'] !== 'edit_movie_form') {
     $id = $_GET['id'];
     if ($_GET['action'] === 'promote') {
         $conn->query("UPDATE users SET role = 'admin' WHERE id = $id");

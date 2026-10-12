@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '../Model/db.php';
+require_once '../../Model/db.php';
 
 if (!isset($_SESSION['user_name'])) {
     header("Location: login.php");
