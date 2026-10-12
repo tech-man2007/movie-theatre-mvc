@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_movie'])) {
             $banner = 'uploads/' . $filename; // store clean relative path
         }
     }
-    
+
     $stmt = $conn->prepare("INSERT INTO movies (title, duration, language, banner) VALUES (?, ?, ?, ?)");
     $stmt->bind_param("siss", $title, $duration, $language, $banner);
     $stmt->execute();
@@ -47,12 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_movie'])) {
             $stmt->bind_param("sissi", $title, $duration, $language, $banner, $id);
             $stmt->execute();
         }
-    } else {
-        $stmt = $conn->prepare("UPDATE movies SET title = ?, duration = ?, language = ? WHERE id = ?");
-        $stmt->bind_param("ssii", $title, $duration, $language, $id);
-        // Note: type definition corrected below for s s i i
     }
-    // Correct bind for title(s), duration(i), language(s), id(i) -> "sisi"
+    
     $stmt = $conn->prepare("UPDATE movies SET title = ?, duration = ?, language = ? WHERE id = ?");
     $stmt->bind_param("sisi", $title, $duration, $language, $id);
     $stmt->execute();
@@ -174,7 +170,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'edit_movie_form' && isset($_G
                 </tr>
             </thead>
             <tbody>
-                <?php while ($m = $movies->fetch_assoc()): 
+                <?php while ($m = $movies->fetch_assoc()):
                     $poster = $m['banner'];
                     if (strpos($poster, 'http') !== 0) {
                         $poster = '../../' . ltrim($poster, './');
@@ -253,7 +249,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'edit_movie_form' && isset($_G
                         <a href="dashboard.php?action=delete_user&id=<?php echo $u['id']; ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete user and their bookings?')">Delete User</a>
                     </td>
                 </tr>
-                <?php endforeach; ?>
+                <?php endwhile; ?>
             </tbody>
         </table>
     </div>
