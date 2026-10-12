@@ -393,8 +393,6 @@ The project also provides practical experience in deploying a PHP and MySQL appl
 - Repository: [Movie Theatre - MVC](https://github.com/tech-man2007/movie-theatre-mvc)
 - Live Demo: [LCU Cinemas](https://lcu-movies-jagan.freedev.app/)
 
-Replace the placeholders with your actual profile and repository details.
-
 ---
 
 <p align="center">
