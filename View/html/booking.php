@@ -7,30 +7,28 @@ if (!isset($_SESSION['user_name'])) {
     exit();
 }
 
-$movie_id = $_GET['movie_id'] ?? 1;
+$movie_id =$_GET['movie_id'] ?? 1;
 
 // Fetch movie details
-$stmt = $conn->prepare("SELECT * FROM movies WHERE id = ?");
-$stmt->bind_param("i", $movie_id);
-$stmt->execute();
-$movie = $stmt->get_result()->fetch_assoc();
+$stmt =$conn->prepare("SELECT * FROM movies WHERE id = ?");
+$stmt->bind_param("i", $movie_id);$stmt->execute();
+$movie =$stmt->get_result()->fetch_assoc();
 
 // Fetch already booked seats for this movie
-$booked_stmt = $conn->prepare("SELECT seats FROM bookings WHERE movie_id = ?");
-$booked_stmt->bind_param("i", $movie_id);
-$booked_stmt->execute();
-$booked_result = $booked_stmt->get_result();
+$booked_stmt =$conn->prepare("SELECT seats FROM bookings WHERE movie_id = ?");
+$booked_stmt->bind_param("i", $movie_id);$booked_stmt->execute();
+$booked_result =$booked_stmt->get_result();
 
 $occupied_seats = [];
-while ($row = $booked_result->fetch_assoc()) {
-    $seats_array = explode(',', $row['seats']);
-    foreach ($seats_array as $s) {
+while ($row =$booked_result->fetch_assoc()) {
+    $seats_array = explode(',',$row['seats']);
+    foreach ($seats_array as$s) {
         $occupied_seats[] = trim($s);
     }
 }
 
-$rows = ['A', 'B', 'C', 'D'];
-$seats_per_row = 6;
+// Define Tiered Rows with individual prices and color themes
+$row_tiers = [     'A' => ['price' => 150, 'theme' => 'info', 'name' => 'Standard (₹150)'],     'B' => ['price' => 200, 'theme' => 'warning', 'name' => 'Executive (₹200)'],     'C' => ['price' => 300, 'theme' => 'success', 'name' => 'Premium (₹300)'],     'D' => ['price' => 400, 'theme' => 'danger', 'name' => 'VIP Recliner (₹400)'] ];$seats_per_row = 6;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -41,19 +39,9 @@ $seats_per_row = 6;
     <link href="../css/style.css" rel="stylesheet">
     <style>
         .seat-btn { width: 45px; height: 45px; margin: 4px; font-weight: bold; }
-        /* Kill mobile touch sticky focus/active highlights */
         .seat-btn:focus, .seat-btn:active, .seat-btn:hover {
             box-shadow: none !important;
             outline: none !important;
-        }
-        .btn-outline-warning:active, .btn-outline-warning:focus, .btn-outline-warning:hover {
-            background-color: transparent !important;
-            color: #ffc107 !important;
-            border-color: #ffc107 !important;
-        }
-        .btn-warning:active, .btn-warning:focus {
-            background-color: #ffc107 !important;
-            color: #000 !important;
         }
         .screen {
             background: #e0e0e0;
@@ -67,7 +55,17 @@ $seats_per_row = 6;
 <body class="bg-dark text-light container py-5">
     <div class="max-w-lg mx-auto">
         <h2 class="text-warning text-center"><?php echo htmlspecialchars($movie['title']); ?></h2>
-        <p class="text-center text-muted">Ticket Price: ₹200 / seat</p>
+        
+        <!-- Pricing Legend -->
+        <div class="row text-center my-3 g-2">
+            <?php foreach ($row_tiers as $r_key =>$tier): ?>
+                <div class="col-6 col-md-3">
+                    <span class="badge bg-<?php echo $tier['theme']; ?> text-dark w-100 py-2">
+                        Row <?php echo $r_key; ?>: ₹<?php echo$tier['price']; ?>
+                    </span>
+                </div>
+            <?php endforeach; ?>
+        </div>
 
         <!-- Screen Visual -->
         <div class="my-4 text-center">
@@ -75,19 +73,24 @@ $seats_per_row = 6;
             <small class="text-uppercase text-muted">Screen This Way</small>
         </div>
 
-        <!-- Seat Grid -->
+        <!-- Seat Grid with Tiered Colors -->
         <div class="text-center my-4">
-            <?php foreach ($rows as $r): ?>
-                <div class="d-flex justify-content-center align-items-center mb-1">
-                    <span class="me-3 fw-bold text-warning" style="width: 20px;"><?php echo $r; ?></span>
-                    <?php for ($i = 1; $i <= $seats_per_row; $i++):
-                        $seat_id = $r . $i;
-                        $is_occupied = in_array($seat_id, $occupied_seats);
+            <?php foreach ($row_tiers as $r =>$tier): ?>
+                <div class="d-flex justify-content-center align-items-center mb-2">
+                    <span class="me-3 fw-bold text-<?php echo $tier['theme']; ?>" style="width: 25px;"><?php echo $r; ?></span>
+                    <?php for ($i = 1; $i <=$seats_per_row; $i++):$seat_id = $r .$i;
+                        $is_occupied = in_array($seat_id,$occupied_seats);
                     ?>
                         <?php if ($is_occupied): ?>
                             <button type="button" class="btn btn-secondary seat-btn" disabled><?php echo $i; ?></button>
                         <?php else: ?>
-                            <button type="button" class="btn btn-outline-warning seat-btn" data-seat="<?php echo $seat_id; ?>" onclick="toggleSeat(this)"><?php echo $i; ?></button>
+                            <button type="button" 
+                                    class="btn btn-outline-<?php echo $tier['theme']; ?> seat-btn" 
+                                    data-seat="<?php echo $seat_id; ?>" 
+                                    data-row="<?php echo $r; ?>"
+                                    onclick="toggleSeat(this)">
+                                <?php echo $i; ?>
+                            </button>
                         <?php endif; ?>
                     <?php endfor; ?>
                 </div>
@@ -127,31 +130,51 @@ $seats_per_row = 6;
     </div>
 
     <script>
+    // Row pricing mapping in JavaScript
+    const rowPrices = {
+        'A': 150,
+        'B': 200,
+        'C': 300,
+        'D': 400
+    };
+
     let selectedSeats = [];
-    const ticketPrice = 200;
 
     function toggleSeat(btn) {
         const seat = btn.getAttribute('data-seat');
+        const row = btn.getAttribute('data-row');
 
         if (selectedSeats.includes(seat)) {
             selectedSeats = selectedSeats.filter(s => s !== seat);
-            btn.classList.remove('btn-warning');
-            btn.classList.add('btn-outline-warning');
+            btn.classList.remove(`btn-${getRowTheme(row)}`);
+            btn.classList.add(`btn-outline-${getRowTheme(row)}`);
         } else {
             selectedSeats.push(seat);
-            btn.classList.remove('btn-outline-warning');
-            btn.classList.add('btn-warning');
+            btn.classList.remove(`btn-outline-${getRowTheme(row)}`);
+            btn.classList.add(`btn-${getRowTheme(row)}`);
         }
 
-        // Instantly force focus loss to clear mobile touch highlights
+        // Instantly force focus loss to clear highlights
         btn.blur();
-        btn.blur(); // Double trigger for mobile Safari/Chrome touch renderers
+        btn.blur();
+
+        // Calculate dynamic total price based on individual seat row prices
+        let totalPrice = 0;
+        selectedSeats.forEach(s => {
+            const r = s.charAt(0);
+            totalPrice += rowPrices[r] || 200;
+        });
 
         // Update UI & Hidden Form Input
         document.getElementById('seats-input').value = selectedSeats.join(',');
         document.getElementById('selected-seats-display').innerText = selectedSeats.length > 0 ? selectedSeats.join(', ') : 'None';
-        document.getElementById('total-price-display').innerText = selectedSeats.length * ticketPrice;
+        document.getElementById('total-price-display').innerText = totalPrice;
         document.getElementById('submit-btn').disabled = selectedSeats.length === 0;
+    }
+
+    function getRowTheme(row) {
+        const themes = { 'A': 'info', 'B': 'warning', 'C': 'success', 'D': 'danger' };
+        return themes[row] || 'warning';
     }
     </script>
 </body>
