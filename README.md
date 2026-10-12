@@ -10,7 +10,7 @@ LCU Cinemas is a web-based application that allows users to browse movies, selec
 
 <p align="center">
   <b>Live Demo:</b>
-  <a href="https://lcu-movies-jagan.freeddev.app/">Visit LCU Cinemas</a>
+  <a href="https://lcu-movies-jagan.freedev.app/">Visit LCU Cinemas</a>
 </p>
 
 ---
