@@ -272,13 +272,13 @@ Install or arrange the following:
 Replace the placeholders with your actual GitHub username and repository name.
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/YOUR-REPOSITORY.git
+git clone https://github.com/tech-man2007/movie-theatre-mvc.git
 ```
 
 Navigate to the project directory:
 
 ```bash
-cd movie-theatre-mvc-main
+cd movie-theatre-mvc
 ```
 
 ### Step 2: Configure the Web Server
@@ -391,7 +391,7 @@ The project also provides practical experience in deploying a PHP and MySQL appl
 
 - GitHub: [tech-man2007](https://github.com/tech-man2007)
 - Repository: [Movie Theatre - MVC](https://github.com/tech-man2007/movie-theatre-mvc)
-- Live Demo: [LCU Cinemas](https://lcu-movies-jagan.freeddev.app/)
+- Live Demo: [LCU Cinemas](https://lcu-movies-jagan.freedev.app/)
 
 Replace the placeholders with your actual profile and repository details.
 
