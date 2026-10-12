@@ -186,6 +186,7 @@ if ($show_time !== '' && count($occupied_seats) >= $total_seats_count) {
                 <div class="screen mb-2"></div>
                 <small class="text-uppercase text-muted">Screen This Way</small>
             </div>
+        </form>
 
             <!-- Seat Grid -->
             <div class="text-center my-4">
@@ -259,6 +260,11 @@ if ($show_time !== '' && count($occupied_seats) >= $total_seats_count) {
         document.getElementById('selected-seats-display').innerText = selectedSeats.length > 0 ? selectedSeats.join(', ') : 'None';
         document.getElementById('total-price-display').innerText = totalPrice;
         document.getElementById('submit-btn').disabled = selectedSeats.length === 0;
+    }
+
+    function getRowTheme(row) {
+        const themes = { 'A': 'info', 'B': 'warning', 'C': 'success', 'D': 'danger' };
+        return themes[row] || 'warning';
     }
     </script>
 </body>
