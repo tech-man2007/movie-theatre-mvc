@@ -41,9 +41,19 @@ $seats_per_row = 6;
     <link href="../css/style.css" rel="stylesheet">
     <style>
         .seat-btn { width: 45px; height: 45px; margin: 4px; font-weight: bold; }
-        .seat-btn:focus, .seat-btn:active {
+        /* Kill mobile touch sticky focus/active highlights */
+        .seat-btn:focus, .seat-btn:active, .seat-btn:hover {
             box-shadow: none !important;
             outline: none !important;
+        }
+        .btn-outline-warning:active, .btn-outline-warning:focus, .btn-outline-warning:hover {
+            background-color: transparent !important;
+            color: #ffc107 !important;
+            border-color: #ffc107 !important;
+        }
+        .btn-warning:active, .btn-warning:focus {
+            background-color: #ffc107 !important;
+            color: #000 !important;
         }
         .screen {
             background: #e0e0e0;
@@ -133,8 +143,9 @@ $seats_per_row = 6;
             btn.classList.add('btn-warning');
         }
 
-        // Fixes the sticky UI highlight issue instantly
+        // Instantly force focus loss to clear mobile touch highlights
         btn.blur();
+        btn.blur(); // Double trigger for mobile Safari/Chrome touch renderers
 
         // Update UI & Hidden Form Input
         document.getElementById('seats-input').value = selectedSeats.join(',');
