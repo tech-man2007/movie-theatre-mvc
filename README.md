@@ -187,7 +187,7 @@ This separation improves code organization, maintainability, and the ability to 
 The main application files are organized into the following directories:
 
 ```text
-movie-theatre-mvc-main/
+movie-theatre-mvc/
 │
 ├── Controller/
 │   ├── admin_auth.php
